@@ -37,6 +37,8 @@ dependencies {
 	testAnnotationProcessor 'org.projectlombok:lombok'
 }
 
+compileJava.options.compilerArgs << 'parameters'
+
 tasks.named('test') {
 	useJUnitPlatform()
 }
