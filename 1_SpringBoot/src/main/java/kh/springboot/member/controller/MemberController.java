@@ -1,22 +1,29 @@
 package kh.springboot.member.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import kh.springboot.member.model.service.MemberService;
 import kh.springboot.member.model.vo.Member;
+import lombok.RequiredArgsConstructor;
 
 @Controller
+@RequiredArgsConstructor //DI 생성자 주입
+
 public class MemberController {
+	
+	//@Autowired // DI 필드 주입
+	private final MemberService mService;
 	
 	@GetMapping("/member/signIn")
 	public String signIn() {
 		return "views/member/login";
 		
 	}
-	
-	
+
 	/***** 파라미터 받아오기 *****/
 	//1. HttpServletRequest 사용 (Servlet 방식)
 //	@PostMapping("member/signIn")
@@ -51,12 +58,12 @@ public class MemberController {
 //	}
 	
 	//4. @ModelAttribute 사용
-	// 해당 클래슨 내부에 기본 생성자와 setter메소드가 무조건 있어야 동작
+	// 해당 클래스 내부에 기본 생성자와 setter메소드가 무조건 있어야 동작
 	//파라미터와 세터의 이름이 같으면 알아서 mapping
 	@PostMapping("/member/signIn")
 	public void login(@ModelAttribute Member m) {
-		System.out.println(m);
-		
+		System.out.println(mService);
+		mService.login(m);
 	}
 	
 	
