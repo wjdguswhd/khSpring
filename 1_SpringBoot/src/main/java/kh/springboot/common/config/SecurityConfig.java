@@ -9,7 +9,8 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 	@Bean //return값을 bean에 올리는 것
 	public SecurityFilterChain filterChain(HttpSecurity http) {
-		http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+		http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+			.csrf(csrf -> csrf.disable());
 		return http.build();
 	}
 }
