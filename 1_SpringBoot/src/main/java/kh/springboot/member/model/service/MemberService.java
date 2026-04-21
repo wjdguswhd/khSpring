@@ -1,5 +1,8 @@
 package kh.springboot.member.model.service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import org.springframework.stereotype.Service;
 
 import kh.springboot.member.model.mapper.MemberMapper;
@@ -19,6 +22,14 @@ public class MemberService {
 
 	public int insertMember(Member m) {
 		return mapper.insertMember(m);
+	}
+
+	public ArrayList<HashMap<String, Object>> selectMyList(String id) {
+		return mapper.selectMyList(id);
+	}
+
+	public int updateMember(Member m) {
+		return mapper.updateMember(m);
 	}
 
 }

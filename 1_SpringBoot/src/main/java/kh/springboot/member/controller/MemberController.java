@@ -1,11 +1,19 @@
 package kh.springboot.member.controller;
 
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.bind.support.SessionStatus;
+import org.springframework.web.servlet.ModelAndView;
 
 import jakarta.servlet.http.HttpSession;
 import kh.springboot.member.model.exception.MemberException;
@@ -15,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequiredArgsConstructor //DI 생성자 주입
-
+@SessionAttributes("loginUser")
 public class MemberController {
 	
 	// DI 필드 주입
@@ -29,9 +37,9 @@ public class MemberController {
 	
 	@GetMapping("/member/signIn")
 	public String signIn() {
-		System.out.println(bcrypt.encode("1234"));
-		System.out.println(bcrypt.encode("pass01"));
-		System.out.println(bcrypt.encode("pass02"));
+//		System.out.println(bcrypt.encode("1234"));
+//		System.out.println(bcrypt.encode("pass01"));
+//		System.out.println(bcrypt.encode("pass02"));
 		return "views/member/login";
 		
 	}
@@ -79,23 +87,23 @@ public class MemberController {
 //	}
 	
 	//5. @ModelAttribute 생략
-	@PostMapping("/member/signIn")
-	public String login(Member m, HttpSession session) {
-		Member loginUser = mService.login(m);
-		if(loginUser != null && bcrypt.matches(m.getPwd(), loginUser.getPwd())) {
-			session.setAttribute("loginUser", loginUser);
-//			return "views/home";
-			return "redirect:/home";
-		}else {
-			throw new MemberException("로그인을 실패하였습니다.");
-		}
-	}
+//	@PostMapping("/member/signIn")
+//	public String login(Member m, HttpSession session) {
+//		Member loginUser = mService.login(m);
+//		if(loginUser != null && bcrypt.matches(m.getPwd(), loginUser.getPwd())) {
+//			session.setAttribute("loginUser", loginUser);
+////			return "views/home";
+//			return "redirect:/home";
+//		}else {
+//			throw new MemberException("로그인을 실패하였습니다.");
+//		}
+//	}
 	
-	@GetMapping("/member/logout")
-	public String logout(HttpSession session) {
-		session.invalidate();
-		return "redirect:/home";
-	}
+//	@GetMapping("/member/logout")
+//	public String logout(HttpSession session) {
+//		session.invalidate();
+//		return "redirect:/home";
+//	}
 	
 	@GetMapping("/member/enroll")
 	public String enroll() {
@@ -120,22 +128,74 @@ public class MemberController {
 		}
 	}
 	
+	/***** view에 전달하고자 하는 데이터가 있을때에 대한 방법******/
+	//1. Model 사용
+	// 데이터를 맵 형식(key, value)으로 담을 때 사용, requestScope
+//	@GetMapping("/member/myInfo")
+//	public String myInfo(HttpSession session, Model model) {
+//	    Member loginUser = (Member)session.getAttribute("loginUser");
+//	    if(loginUser != null) {
+//	        String id = loginUser.getId();
+//	        ArrayList<HashMap<String, Object>> list = mService.selectMyList(id);
+//	        model.addAttribute("list", list);
+//	    }
+//	    return "views/member/myInfo";
+//	}
+	
+	//2. ModelAndView 사용
 	@GetMapping("/member/myInfo")
-	public String myInfo(HttpSession session) {
-		Member loginUser = (Member)session.getAttribute("loginUser");
-		if(loginUser != null) {
-			String id = loginUser.getId();
-			mService.selectMyList(id);
-		}
-		return "views/member/myInfo";
+	public ModelAndView myInfo(HttpSession session, ModelAndView mv) {
+	    Member loginUser = (Member)session.getAttribute("loginUser");
+	    if(loginUser != null) {
+	        String id = loginUser.getId();
+	        ArrayList<HashMap<String, Object>> list = mService.selectMyList(id);
+	        
+	        mv.addObject("list",list);
+	        mv.setViewName("views/member/myInfo");
+	    }
+	    return mv;
 	}
 	
+	// 3. @SessionAttributes 사용
+	//  Model에 atrribute가 추가될 때 자동으로 키 값을 찾아 세션에 등록하는 기능 제공
+	@PostMapping("/member/signIn")
+	public String login(Member m, Model model) {
+		Member loginUser = mService.login(m);
+		if(loginUser != null && bcrypt.matches(m.getPwd(), loginUser.getPwd())) {
+			model.addAttribute("loginUser", loginUser);
+//			return "views/home";
+			return "redirect:/home";
+		}else {
+			throw new MemberException("로그인을 실패하였습니다.");
+		}
+	}
 	
+	@GetMapping("/member/logout")
+	public String logout(SessionStatus status) {
+		status.setComplete();
+		return "redirect:/home";
+	}
 	
+	@GetMapping("/member/edit")
+	public String edit() {
+		return "views/member/edit";	
+		
+	}
 	
-	
-	
-	
-	
+	@PostMapping("/member/edit")
+	public String edit(@ModelAttribute Member m, Model model, @RequestParam("emailId") String emailId, @RequestParam("emailDomain") String emailDomain) {
+		
+		if(!emailId.trim().equals("")) {
+			m.setEmail(emailId + "@" + emailDomain);
+		}
+		
+		int result = mService.updateMember(m);
+		if(result > 0) {
+			model.addAttribute("loginUser",mService.login(m));
+			return "redirect:/member/myInfo";
+		}else {
+			throw new MemberException("회원 정보 수정을 실패하였습니다.");
+		}
+	}
 	
 }

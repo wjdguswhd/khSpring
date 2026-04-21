@@ -27,8 +27,8 @@
 					
 					<p class="col-md-8 fs-4 fw-bold" th:unless="${session.loginUser == null}">
 						[[${session.loginUser.nickName}]]님 환영합니다.
-						<button class="btn btn-success btn-lg" type="button" onclick="location.href='member/myInfo'">MY PAGE</button>
-						<button class="btn btn-dark btn-lg" type="button" onclick="location.href='member/logout'">LOGOUT</button>
+						<button class="btn btn-success btn-lg" type="button" onclick="location.href='/member/myInfo'">MY PAGE</button>
+						<button class="btn btn-dark btn-lg" type="button" onclick="location.href='/member/logout'">LOGOUT</button>
 					</p>
 				</div>
 			</div>
