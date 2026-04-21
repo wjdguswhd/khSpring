@@ -3,6 +3,7 @@ package kh.springboot.common.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration // bean생성과 동시에 객체생성 및 설정하는 클래스라는 것을 알려줌
@@ -12,5 +13,11 @@ public class SecurityConfig {
 		http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
 			.csrf(csrf -> csrf.disable());
 		return http.build();
+	}
+	
+	
+	@Bean
+	public BCryptPasswordEncoder getPasswordEncoder() {
+		return new BCryptPasswordEncoder();
 	}
 }

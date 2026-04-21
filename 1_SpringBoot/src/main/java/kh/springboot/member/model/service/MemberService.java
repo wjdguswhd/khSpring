@@ -17,4 +17,8 @@ public class MemberService {
 		return mapper.login(m);
 	}
 
+	public int insertMember(Member m) {
+		return mapper.insertMember(m);
+	}
+
 }

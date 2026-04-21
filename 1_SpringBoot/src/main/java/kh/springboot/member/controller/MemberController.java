@@ -1,8 +1,11 @@
 package kh.springboot.member.controller;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import jakarta.servlet.http.HttpSession;
 import kh.springboot.member.model.exception.MemberException;
@@ -22,9 +25,13 @@ public class MemberController {
 	
 	//DI 생성자 주입
 	private final MemberService mService;
+	private final BCryptPasswordEncoder bcrypt;
 	
 	@GetMapping("/member/signIn")
 	public String signIn() {
+		System.out.println(bcrypt.encode("1234"));
+		System.out.println(bcrypt.encode("pass01"));
+		System.out.println(bcrypt.encode("pass02"));
 		return "views/member/login";
 		
 	}
@@ -75,7 +82,7 @@ public class MemberController {
 	@PostMapping("/member/signIn")
 	public String login(Member m, HttpSession session) {
 		Member loginUser = mService.login(m);
-		if(loginUser != null) {
+		if(loginUser != null && bcrypt.matches(m.getPwd(), loginUser.getPwd())) {
 			session.setAttribute("loginUser", loginUser);
 //			return "views/home";
 			return "redirect:/home";
@@ -89,5 +96,46 @@ public class MemberController {
 		session.invalidate();
 		return "redirect:/home";
 	}
+	
+	@GetMapping("/member/enroll")
+	public String enroll() {
+		return "views/member/enroll";
+	}
+	
+	@PostMapping("/member/enroll")
+	public String enroll(@ModelAttribute Member m, @RequestParam("emailId") String emailId, @RequestParam("emailDomain") String emailDomain) {
+		String email = null;
+		if(!emailId.trim().equals("")) {
+			m.setEmail(emailId + "@" + emailDomain);
+		}
+		
+		//bcypt : 랜덤 salt값을 이용하여 암호화 진행
+		m.setPwd(bcrypt.encode(m.getPwd()));
+		
+		int result = mService.insertMember(m);
+		if(result > 0) {
+			return "redirect:/home";
+		}else {
+			throw new MemberException("회원가입을 실패하였습니다.");
+		}
+	}
+	
+	@GetMapping("/member/myInfo")
+	public String myInfo(HttpSession session) {
+		Member loginUser = (Member)session.getAttribute("loginUser");
+		if(loginUser != null) {
+			String id = loginUser.getId();
+			mService.selectMyList(id);
+		}
+		return "views/member/myInfo";
+	}
+	
+	
+	
+	
+	
+	
+	
+	
 	
 }

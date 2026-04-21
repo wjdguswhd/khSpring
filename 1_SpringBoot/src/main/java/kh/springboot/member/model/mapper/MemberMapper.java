@@ -8,5 +8,7 @@ import kh.springboot.member.model.vo.Member;
 public interface MemberMapper {
 
 	Member login(Member m);
+
+	int insertMember(Member m);
 	
 }
