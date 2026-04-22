@@ -10,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
@@ -24,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 @Controller
 @RequiredArgsConstructor //DI 생성자 주입
 @SessionAttributes("loginUser")
+@RequestMapping("/member")
 public class MemberController {
 	
 	// DI 필드 주입
@@ -35,12 +37,12 @@ public class MemberController {
 	private final MemberService mService;
 	private final BCryptPasswordEncoder bcrypt;
 	
-	@GetMapping("/member/signIn")
+	@GetMapping("signIn")
 	public String signIn() {
 //		System.out.println(bcrypt.encode("1234"));
 //		System.out.println(bcrypt.encode("pass01"));
 //		System.out.println(bcrypt.encode("pass02"));
-		return "views/member/login";
+		return "login";
 		
 	}
 
@@ -105,12 +107,12 @@ public class MemberController {
 //		return "redirect:/home";
 //	}
 	
-	@GetMapping("/member/enroll")
+	@GetMapping("/enroll")
 	public String enroll() {
-		return "views/member/enroll";
+		return "enroll";
 	}
 	
-	@PostMapping("/member/enroll")
+	@PostMapping("/enroll")
 	public String enroll(@ModelAttribute Member m, @RequestParam("emailId") String emailId, @RequestParam("emailDomain") String emailDomain) {
 		String email = null;
 		if(!emailId.trim().equals("")) {
@@ -143,7 +145,7 @@ public class MemberController {
 //	}
 	
 	//2. ModelAndView 사용
-	@GetMapping("/member/myInfo")
+	@GetMapping("/myInfo")
 	public ModelAndView myInfo(HttpSession session, ModelAndView mv) {
 	    Member loginUser = (Member)session.getAttribute("loginUser");
 	    if(loginUser != null) {
@@ -151,14 +153,14 @@ public class MemberController {
 	        ArrayList<HashMap<String, Object>> list = mService.selectMyList(id);
 	        
 	        mv.addObject("list",list);
-	        mv.setViewName("views/member/myInfo");
+	        mv.setViewName("myInfo");
 	    }
 	    return mv;
 	}
 	
 	// 3. @SessionAttributes 사용
 	//  Model에 atrribute가 추가될 때 자동으로 키 값을 찾아 세션에 등록하는 기능 제공
-	@PostMapping("/member/signIn")
+	@PostMapping("/signIn")
 	public String login(Member m, Model model) {
 		Member loginUser = mService.login(m);
 		if(loginUser != null && bcrypt.matches(m.getPwd(), loginUser.getPwd())) {
@@ -170,19 +172,19 @@ public class MemberController {
 		}
 	}
 	
-	@GetMapping("/member/logout")
+	@GetMapping("/logout")
 	public String logout(SessionStatus status) {
 		status.setComplete();
 		return "redirect:/home";
 	}
 	
-	@GetMapping("/member/edit")
+	@GetMapping("/edit")
 	public String edit() {
-		return "views/member/edit";	
+		return "edit";	
 		
 	}
 	
-	@PostMapping("/member/edit")
+	@PostMapping("/edit")
 	public String edit(@ModelAttribute Member m, Model model, @RequestParam("emailId") String emailId, @RequestParam("emailDomain") String emailDomain) {
 		
 		if(!emailId.trim().equals("")) {
@@ -196,6 +198,38 @@ public class MemberController {
 		}else {
 			throw new MemberException("회원 정보 수정을 실패하였습니다.");
 		}
+		
 	}
+
+	@PostMapping("/updatePassword")
+	public String updatePassword(@RequestParam("currentPwd") String pwd, @RequestParam("newPwd") String newPwd,
+						/*HttpSession session*/ Model model) {
+		
+		/* Member m = (Member)session.getAttribute("loginUser"); */
+		Member m = (Member)model.getAttribute("loginUser");
+		
+		if(bcrypt.matches(pwd, m.getPwd())) {
+			m.setPwd(bcrypt.encode(newPwd));
+			int result = mService.updatePassword(m);
+			if(result > 0){
+				model.addAttribute("loginUser",m);
+				return "redirect:/home";
+			}else {
+			throw new MemberException("비밀번호 수정을 실패했습니다.");
+			}
+		}else {
+			throw new MemberException("비밀번호 수정을 실패했습니다.");
+		}
+
+	}	
 	
+	@GetMapping("/delete")
+	public String delete(Model model) {
+		int result = mService.deleteMember(((Member)model.getAttribute("loginUser")).getId());
+		if(result > 0) {
+			return "redirect:/member/logout";
+		}else {
+			throw new MemberException("회원탈퇴를 실패했습니다.");
+		}
+	}
 }

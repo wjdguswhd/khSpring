@@ -32,4 +32,12 @@ public class MemberService {
 		return mapper.updateMember(m);
 	}
 
+	public int updatePassword(Member m) {
+		return mapper.updatePassword(m);
+	}
+
+	public int deleteMember(String id) {
+		return mapper.deleteMember(id);
+	}
+
 }
