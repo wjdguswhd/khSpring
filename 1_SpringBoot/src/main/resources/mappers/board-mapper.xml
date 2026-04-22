@@ -7,4 +7,25 @@
 	from board
 	where board_type=#{i} and board_status = 'Y'
 	</select>
+	
+	<select id="selectBoardList" resultMap="boardResultSet">
+		select *
+		from board
+			join member on(board_writer = id)
+		where board_type = #{i} and board_status = 'Y'
+		order by board_id desc
+	</select>
+	
+	<resultMap type="Board" id="boardResultSet">
+		<result column="board_create_date" property="createDate"/>
+		<result column="board_modify_date" property="modifyDate"/>
+		<result column="board_status" property="status"/>
+	</resultMap>
+	
+	<insert id="insertBoard">
+		insert into board
+		values(seq_bid.nextval, #{boardTitle}, #{boardWriter}, #{boardContent},
+			default,sysdate,sysdate,default,#{boardType})
+		
+	</insert>
 </mapper>

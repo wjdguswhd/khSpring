@@ -18,4 +18,16 @@ public class TemplateResolverConfig {
 		
 		return mResolver;
 	}
+	
+	@Bean
+	public ClassLoaderTemplateResolver boardResolver() {
+		ClassLoaderTemplateResolver bResolver = new ClassLoaderTemplateResolver();
+		bResolver.setPrefix("templates/views/board/");
+		bResolver.setSuffix(".html");
+		bResolver.setTemplateMode(TemplateMode.HTML);
+		bResolver.setCacheable(false);
+		bResolver.setCheckExistence(true);
+		
+		return bResolver;
+	}
 }
