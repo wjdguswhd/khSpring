@@ -3,8 +3,10 @@ package kh.springboot.board.controller;
 import java.util.ArrayList;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -61,4 +63,40 @@ public class BoardController {
 		}
 	}
 	
+	// board/?/?
+	@GetMapping("/{id}/{page}")
+	public String selectBoard(@PathVariable("id") int bId, @PathVariable("page") int page, 
+			HttpSession session, Model model ) {
+		Member loginUser = (Member)session.getAttribute("loginUser");
+		String id = null;
+		if(loginUser != null) {
+			id = loginUser.getId();
+		}
+		
+		Board b = bService.selectBoard(bId,id);
+		if(b != null) {
+			model.addAttribute("b",b).addAttribute("page",page);
+			return "detail";
+		}else {
+			throw new BoardException("게시글 상세보기를 실패하였습니다.");
+		}
+	}
+	
+	@PostMapping("updForm")
+	public String updateForm(@RequestParam("boardId") int bId, @RequestParam("page") int page, Model model) {
+		Board b = bService.selectBoard(bId, null);
+		model.addAttribute("b",b).addAttribute("page",page);
+		return "views/board/edit";
+	}
+	
+	@PostMapping("update")
+	public String updateBoard(@ModelAttribute Board b, @RequestParam("page") int page) {
+		int result = bService.updateBoard(b);
+		if (result>0) {
+//			return "redirect:/board/" + b.getBoardId() + "/" + page;
+			return String.format("redirect:/board/%d/%d", b.getBoardId(), page);
+		}else {
+			throw new BoardException("게시글 수정을 실패했습니다.");
+		}
+	}
 }

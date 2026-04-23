@@ -46,6 +46,7 @@ public class MemberController {
 		
 	}
 
+
 	/***** 파라미터 받아오기 *****/
 	//1. HttpServletRequest 사용 (Servlet 방식)
 //	@PostMapping("member/signIn")

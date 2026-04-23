@@ -63,5 +63,22 @@
 	</div>
 	
 	
+	<script th:inline="javascript">
+		window.onload =()=>{
+			const tbody = document.querySelector('tbody');
+			const tds = tbody.querySelectorAll('td');
+			for(const td of tds){
+				td.addEventListener('click',(e)=>{
+					const trTds = e.target.parentElement.querySelectorAll('td');
+					const boardId = trTds[0].innerText;
+					location.href = '/board/' + boardId + "/" + /*[[${pi.currentPage}]]*/1;
+				});
+			}
+			
+		}
+	
+	</script>
+	
+	
 </body>
 </html>

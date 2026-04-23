@@ -26,6 +26,25 @@
 		insert into board
 		values(seq_bid.nextval, #{boardTitle}, #{boardWriter}, #{boardContent},
 			default,sysdate,sysdate,default,#{boardType})
-		
 	</insert>
+	
+	<select id="selectBoard" resultMap="boardResultSet">
+	  	select *
+	  	from board
+	  		join member on(board_writer = id)
+	  	where board_status = 'Y' and board_id = #{id}
+	</select>
+	
+	<update id="updateCount">
+		update board
+		set board_count = board_count + 1
+		where board_id = #{bId}
+	</update>
+	
+	<update id="updateBoard">
+		update board
+		set board_title=#{boardTitle}, board_content=#{boardContent}, board_modify_date = sysdate
+		where board_id=#{boardId}
+	</update>
+	
 </mapper>
