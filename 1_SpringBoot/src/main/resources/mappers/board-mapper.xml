@@ -47,4 +47,17 @@
 		where board_id=#{boardId}
 	</update>
 	
+	<update id="deleteBoard">
+		update board
+		set board_status = 'N'
+		where board_id = #{bId}
+	</update>
+	
+	
+	<select id="selectAttmBoardList" resultType="Attachment">
+		select *
+		from attachment
+		where attm_status = 'Y' and attm_level = 0
+		order by attm_id
+	</select>
 </mapper>
