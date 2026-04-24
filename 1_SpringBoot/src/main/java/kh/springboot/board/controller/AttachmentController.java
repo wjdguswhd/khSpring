@@ -6,9 +6,11 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -40,7 +42,7 @@ public class AttachmentController {
 		int listCount = bService.getListCount(2);
 		PageInfo pi = Pagination.getPageInfo(currentPage, listCount, 9);
 		ArrayList<Board> bList = bService.selectBoardList(pi, 2);
-		ArrayList<Attachment> aList = bService.selectAttmBoardList(); 
+		ArrayList<Attachment> aList = bService.selectAttmBoardList(null); 
 		
 		if(bList != null) {
 			model.addAttribute("loc",request.getRequestURI());
@@ -59,6 +61,7 @@ public class AttachmentController {
 	}
 	
 	@PostMapping("insert")
+	@Transactional 
 	public String insertAttmBoard(@ModelAttribute Board b, @RequestParam("file") ArrayList<MultipartFile> files,
 							HttpSession session	) {
 //		System.out.println(b);
@@ -100,6 +103,10 @@ public class AttachmentController {
 		}else {
 			b.setBoardType(2);
 			result1 = bService.insertBoard(b);
+			//System.out.println(b);
+			for(Attachment a : list) {
+				a.setRefBoardId(b.getBoardId());
+			}
 			result2 = bService.insertAttm(list);
 		}
 		
@@ -107,7 +114,7 @@ public class AttachmentController {
 			if(result2 == 0) {
 				return  "redirect:/board/list";
 			}else {
-				return "redirect:/attm/list/";
+				return "redirect:/attm/list";
 			}
 		}else {
 			for(Attachment a : list) {
@@ -152,5 +159,24 @@ public class AttachmentController {
 		if(f.exists()) f.delete();
 	}
 	
+	@GetMapping("/{id}/{page}")
+	public String selectAttm(@PathVariable("id") int bId, @PathVariable("page") int pages,HttpSession session,
+			Model model) {
+		Member loginUser = (Member)session.getAttribute("loginUser");
+		String id = null;
+		if(loginUser != null) {
+			id = loginUser.getId();
+		}
+		Board b = bService.selectBoard(bId,id);
+		ArrayList<Attachment> list = bService.selectAttmBoardList((Integer)bId);
+		
+		if( b!=null) {
+			model.addAttribute("b",b).addAttribute("page",pages).addAttribute("list",list);
+			return "views/attm/detail";
+		}else {
+			throw new BoardException("첨부파일 게시글 상세보기를 실패했습니다.");
+		}
+
+	}
 	
 }

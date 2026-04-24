@@ -23,8 +23,11 @@
 	</resultMap>
 	
 	<insert id="insertBoard">
+		<selectKey order="BEFORE" resultType="_int" keyProperty="boardId">
+			select seq_bid.nextval from dual
+		</selectKey>
 		insert into board
-		values(seq_bid.nextval, #{boardTitle}, #{boardWriter}, #{boardContent},
+		values(#{boardId}, #{boardTitle}, #{boardWriter}, #{boardContent},
 			default,sysdate,sysdate,default,#{boardType})
 	</insert>
 	
@@ -57,7 +60,13 @@
 	<select id="selectAttmBoardList" resultType="Attachment">
 		select *
 		from attachment
-		where attm_status = 'Y' and attm_level = 0
+		where attm_status = 'Y' and 
+		<if test="bId == null">
+			attm_level = 0
+		</if>
+		<if test="bId != null">
+			ref_board_id = #{bId}
+		</if>
 		order by attm_id
 	</select>
 	
@@ -65,9 +74,14 @@
 			insert all
 			<foreach collection="list" item="item" separator=" ">
 				into attachment
-				values(seq_aid.nextval, seq_bid.currval, #{item.originalName}, #{item.renameName},#{item.attmPath},
+			<!-- 	values(seq_aid.nextval, seq_bid.currval, #{item.originalName}, #{item.renameName},#{item.attmPath},
+				 	#{item.attmLevel}, default) -->
+			<!-- 	values(new_aid, seq_bid.currval, #{item.originalName}, #{item.renameName},#{item.attmPath},
+				 	#{item.attmLevel}, default) -->
+				 values(new_aid, #{item.refBoardId}, #{item.originalName}, #{item.renameName},#{item.attmPath},
 				 	#{item.attmLevel}, default)
 			</foreach>
-			select * from dual
+			select * from dual 
+			<!-- insertall가 하나기 때문에 그 안에 nextval이 반복돼도 여러번올라가지 않고 한 번만 올라가서 무결성 제약조건에 위배됨 -->
 	</insert>
 </mapper>
