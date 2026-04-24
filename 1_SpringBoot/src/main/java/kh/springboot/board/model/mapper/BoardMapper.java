@@ -27,6 +27,8 @@ public interface BoardMapper {
 
 	ArrayList<Attachment> selectAttmBoardList();
 
+	int insertAttm(ArrayList<Attachment> list);
+
 
 
 }

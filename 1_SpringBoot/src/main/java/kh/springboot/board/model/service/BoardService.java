@@ -56,5 +56,9 @@ public class BoardService {
 		return mapper.selectAttmBoardList();
 	}
 
+	public int insertAttm(ArrayList<Attachment> list) {
+		return mapper.insertAttm(list);
+	}
+
 
 }
