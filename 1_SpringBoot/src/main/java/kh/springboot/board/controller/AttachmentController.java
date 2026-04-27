@@ -160,7 +160,7 @@ public class AttachmentController {
 	}
 	
 	@GetMapping("/{id}/{page}")
-	public String selectAttm(@PathVariable("id") int bId, @PathVariable("page") int pages,HttpSession session,
+	public String selectAttm(@PathVariable("id") int bId, @PathVariable("page") int page,HttpSession session,
 			Model model) {
 		Member loginUser = (Member)session.getAttribute("loginUser");
 		String id = null;
@@ -171,12 +171,136 @@ public class AttachmentController {
 		ArrayList<Attachment> list = bService.selectAttmBoardList((Integer)bId);
 		
 		if( b!=null) {
-			model.addAttribute("b",b).addAttribute("page",pages).addAttribute("list",list);
+			model.addAttribute("b",b).addAttribute("page",page).addAttribute("list",list);
 			return "views/attm/detail";
 		}else {
 			throw new BoardException("첨부파일 게시글 상세보기를 실패했습니다.");
 		}
 
+	}
+	
+	@PostMapping("updForm")
+	public String updateForm(@RequestParam("boardId") int bId, @RequestParam("page") int page,Model model) {
+		Board b = bService.selectBoard(bId, null);
+		ArrayList<Attachment> list = bService.selectAttmBoardList(bId);
+		model.addAttribute("b",b);
+		model.addAttribute("list",list);
+		model.addAttribute("page",page);
+		return "views/attm/edit";
+		
+	}
+	
+	@PostMapping("update")
+	public String updateBoard(@ModelAttribute Board b, @RequestParam("page") int page,
+									@RequestParam("deleteAttm") String[] deleteAttm, 
+									@RequestParam("file") ArrayList<MultipartFile> files) {
+//		System.out.println(b);
+//		System.out.println(Arrays.toString(deleteAttm));
+//		System.out.println(files);
+		
+		/*
+		  	1. 새파일 o
+		  		(1) 기존 파일 모두 삭제 -> 새 파일 중에서 level 0, 1 지정
+		  		(2) 기존 파일 일부 삭제 -> 삭제할 파일의 level 검사 후, level이 0인 파일이 삭제되면 다른 기존 파일의 레벨을 0으로 지정
+		  							  새 파일의 레벨은 모두 1로 지정
+		  		(3) 기존 파일 모두 유지 -> 새 파일의 레벨은 모두 1로 지정
+		  		
+		  		
+		  	2.. 새파일  x
+		  		(1) 기존 파일 모두 삭제 -> 일반 게시판으로 이동 : board_type = 1
+		  		(2) 기존 파일 일부 삭제 -> 삭제할 파일의 level 검사 후, level이 0인 파일이 삭제되면 다른 기존 파일의 레벨을 0으로 지정
+		  		(3) 기존 파일 모두 유지 -> board만 수정
+		 */
+		
+		b.setBoardType(2);
+		
+		//새로 넣는 파일은 list에 옮기기
+		ArrayList<Attachment> list = new ArrayList<Attachment>();
+		for(int i=0; i<files.size(); i++) {
+			MultipartFile upload = files.get(i);
+			if(!upload.getOriginalFilename().equals("")) {
+				String[] returnArr = saveFile(upload);
+				if(returnArr[1] != null) {
+					Attachment a = new Attachment();
+					a.setOriginalName(upload.getOriginalFilename());
+					a.setRenameName(returnArr[1]);
+					a.setAttmPath(returnArr[0]);
+					a.setRefBoardId(b.getBoardId());
+					
+					list.add(a);
+				}
+			}
+		}
+		
+		//삭제하는 파일이 있다면 삭제할 파일의 이름과 레벨 옮겨담기
+		ArrayList<String> delRename = new ArrayList<>();
+		ArrayList<Integer> delLevel = new ArrayList<>();
+		for(String rename:deleteAttm) {
+			if(!rename.equals("")) {
+				String[] split = rename.split("/");
+				delRename.add(split[0]);
+				delLevel.add(Integer.parseInt(split[1]));
+			}
+		}
+		
+		int deleteAttmResult = 0;
+		boolean existBeforeAttm = true;
+		
+		if(!delRename.isEmpty()) {
+			deleteAttmResult = bService.deleteAttm(delRename);
+			if(deleteAttmResult > 0) {
+				for(String rename : delRename) {
+					deleteFile(rename);
+				}
+			}
+			
+			if(delRename.size() == deleteAttm.length) {
+				existBeforeAttm = false;
+				if(list.isEmpty()) {
+					b.setBoardType(1);
+				}
+			}else {
+				for(int level : delLevel) {
+					if(level == 0) {
+						bService.updateAttmLevel(b.getBoardId());
+						break;
+					}
+				}
+			}
+		
+		}
+		
+		for(int i=0; i<list.size(); i++) {
+			Attachment a = list.get(i);
+			if(existBeforeAttm) {
+				a.setAttmLevel(1);
+			}else {
+				if(i == 0) {
+					a.setAttmLevel(0);
+				}else {
+					a.setAttmLevel(1);
+				}
+			}
+		}
+		
+		int updateBoardResult = bService.updateBoard(b);
+		int updateAttmResult = 0;
+		if(!list.isEmpty()) {
+			updateAttmResult = bService.insertAttm(list);
+		}
+		
+		if(updateBoardResult + updateAttmResult == list.size() + 1) {
+			if(deleteAttm.length != 0 && delRename.size() == deleteAttm.length && updateAttmResult ==0) {
+				
+				return "redirect:/board/list";
+			}else {
+				
+				return String.format("redirect:/attm/%d/%d", b.getBoardId(), page);		
+			}
+		}else {
+			throw new BoardException("첨부파일 게시글 수정을 실패했습니다.");
+		}
+		
 	}
 	
 }

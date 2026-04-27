@@ -29,6 +29,10 @@ public interface BoardMapper {
 
 	int insertAttm(ArrayList<Attachment> list);
 
+	int deleteAttm(ArrayList<String> delRename);
+
+	void updateAttmLevel(int boardId);
+
 
 
 }

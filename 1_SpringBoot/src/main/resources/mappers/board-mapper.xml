@@ -46,7 +46,8 @@
 	
 	<update id="updateBoard">
 		update board
-		set board_title=#{boardTitle}, board_content=#{boardContent}, board_modify_date = sysdate
+		set board_title=#{boardTitle}, board_content=#{boardContent}, 
+			board_modify_date = sysdate, board_type=#{boardType}
 		where board_id=#{boardId}
 	</update>
 	
@@ -84,4 +85,23 @@
 			select * from dual 
 			<!-- insertall가 하나기 때문에 그 안에 nextval이 반복돼도 여러번올라가지 않고 한 번만 올라가서 무결성 제약조건에 위배됨 -->
 	</insert>
+	
+	<delete id="deleteAttm">
+		delete from attachment
+		where rename_name in 
+		<foreach collection="list" item="item" open="(" close=")" separator=", ">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<update id="updateAttmLevel">
+		update attachment 
+		set attm_level=0
+		where attm_id = (select min(attm_id)
+						 from attachment 
+						 where ref_board_id = #{boardId}) 
+	</update>
+	
+	
+	
 </mapper>

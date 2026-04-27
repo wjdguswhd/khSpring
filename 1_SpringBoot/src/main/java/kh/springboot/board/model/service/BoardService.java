@@ -60,5 +60,13 @@ public class BoardService {
 		return mapper.insertAttm(list);
 	}
 
+	public int deleteAttm(ArrayList<String> delRename) {
+		return mapper.deleteAttm(delRename);
+	}
+
+	public void updateAttmLevel(int boardId) {
+		mapper.updateAttmLevel(boardId);
+	}
+
 
 }
