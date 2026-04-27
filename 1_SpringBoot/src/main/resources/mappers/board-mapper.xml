@@ -102,6 +102,10 @@
 						 where ref_board_id = #{boardId}) 
 	</update>
 	
-	
-	
+	<!-- <update id="statusNAttm">
+		update attachment
+		set attm_status = 'N'
+		where ref_board_id = #{bId}
+	</update>
+	 -->
 </mapper>

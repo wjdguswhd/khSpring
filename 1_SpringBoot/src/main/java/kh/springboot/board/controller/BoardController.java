@@ -103,10 +103,10 @@ public class BoardController {
 	}
 	
 	@PostMapping("delete")
-	public String deleteBoard(@RequestParam("boardId") int bId) {
+	public String deleteBoard(@RequestParam("boardId") int bId, HttpServletRequest request) {
 		int result = bService.deleteBoard(bId);
 		if(result > 0) {
-			return "redirect:/board/list";
+			return "redirect:/" + (request.getHeader("referer").contains("board") ? "board" : "attm") +"/list";
 		}else {
 			throw new BoardException("게시글 삭제를 실패했습니다.");
 		}

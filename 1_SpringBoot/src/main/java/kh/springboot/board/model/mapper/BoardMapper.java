@@ -33,6 +33,8 @@ public interface BoardMapper {
 
 	void updateAttmLevel(int boardId);
 
+//	int statusNAttm(int bId);
+
 
 
 }

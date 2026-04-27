@@ -206,7 +206,7 @@ public class AttachmentController {
 		  		(3) 기존 파일 모두 유지 -> 새 파일의 레벨은 모두 1로 지정
 		  		
 		  		
-		  	2.. 새파일  x
+		  	2. 새파일  x
 		  		(1) 기존 파일 모두 삭제 -> 일반 게시판으로 이동 : board_type = 1
 		  		(2) 기존 파일 일부 삭제 -> 삭제할 파일의 level 검사 후, level이 0인 파일이 삭제되면 다른 기존 파일의 레벨을 0으로 지정
 		  		(3) 기존 파일 모두 유지 -> board만 수정
@@ -302,5 +302,20 @@ public class AttachmentController {
 		}
 		
 	}
+	
+	
+//	@PostMapping("delete")
+//	public String deleteBoard(@RequestParam("boardId") int bId) {
+//		int result1 = bService.deleteBoard(bId);
+//		int result2 = bService.statusNAttm(bId);
+//		
+//		if(result1 > 0 && result2 >0) {
+//			return "redirect:/attm/list";
+//		}else {
+//			throw new BoardException("첨부파일 게시글 삭제를 실패했습니다.");
+//		}
+//	}
+	
+	
 	
 }
