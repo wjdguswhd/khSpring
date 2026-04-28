@@ -5,6 +5,7 @@
 <title>Insert title here</title>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
 </head>
 <body class="bg-light">
 	<div class="container">
@@ -89,5 +90,51 @@
 
 		<footer class="my-5 pt-5 text-muted text-center text-small"></footer>
 	</div>
+	
+	
+	<script>
+		window.onload = () =>{
+			//id가 id인 곳에 변화가 생기거나 커서가 밖으로 나갔을 때
+			//해당 필드에 있는 값으로 비동기 통신(/member/checkId)
+			//단 필드 내 있는 값이 비어있으면 결과 값으로 'Please check your ID.'라고 검은색으로 나타나게
+			//아이디를 사용할 수 있으면 'You can use this id.' 라고 초록색 결과가 나타나고
+			//아이디를 사용할 수 없으면 'Youc can't use this id.'라고 빨간색 결과가 나타남
+			
+			document.getElementById('id').addEventListener('change',e =>{
+				checkValue(e.target)
+				
+			});
+			
+	
+			document.getElementById('nickName').addEventListener('change', function(){
+				checkValue(this);
+			});
+		
+		}
+		
+		const checkValue = obj => {
+			const resultLabel = obj.nextElementSibling;
+			if(obj.value.trim()==''){
+				resultLabel.style.color = 'black';
+				resultLabel.innerText = 'Please check your' + (obj.id == 'id' ? 'ID.' : 'NickName.');
+			}else{
+				$.ajax({
+					url:'/member/checkValue',
+					data: {column:obj.id, value:obj.value.trim()},
+					success: data =>{
+						if(data == 0){
+							resultLabel.innerText = 'You can use this ' + obj.id + '.';
+							resultLabel.style.color = 'green';
+						}else{
+							resultLabel.innerText = "You can't use this " + obj.id + '.';
+							resultLabel.style.color = 'red';
+						}
+					},
+					error: data => console.log(data)
+				});
+			}
+		}
+	
+	</script>
 </body>
 </html>
