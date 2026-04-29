@@ -2,6 +2,7 @@ package kh.springboot.board.model.service;
 
 import java.util.ArrayList;
 
+
 import org.apache.ibatis.session.RowBounds;
 import org.springframework.stereotype.Service;
 
@@ -9,6 +10,7 @@ import kh.springboot.board.model.mapper.BoardMapper;
 import kh.springboot.board.model.vo.Attachment;
 import kh.springboot.board.model.vo.Board;
 import kh.springboot.board.model.vo.PageInfo;
+import kh.springboot.board.model.vo.Reply;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -71,6 +73,21 @@ public class BoardService {
 	public ArrayList<Board> selectTop() {
 		return mapper.selectTop();
 	}
+
+	public ArrayList<Reply> selectReplyList(int bId) {
+		return mapper.selectReplyList(bId);
+		
+	}
+
+	public int insertReply(Reply r) {
+		return mapper.insertReply(r);
+	}
+
+	public int deleteReply(int rId) {
+		return mapper.deleteReply(rId);
+	}
+
+
 
 //	public int statusNAttm(int bId) {
 //		return mapper.statusNAttm(bId);

@@ -19,6 +19,7 @@ import kh.springboot.board.model.exception.BoardException;
 import kh.springboot.board.model.service.BoardService;
 import kh.springboot.board.model.vo.Board;
 import kh.springboot.board.model.vo.PageInfo;
+import kh.springboot.board.model.vo.Reply;
 import kh.springboot.common.Pagination;
 import kh.springboot.member.model.vo.Member;
 import lombok.RequiredArgsConstructor;
@@ -75,8 +76,9 @@ public class BoardController {
 		}
 		
 		Board b = bService.selectBoard(bId,id);
+		ArrayList<Reply> list = bService.selectReplyList(bId);
 		if(b != null) {
-			model.addAttribute("b",b).addAttribute("page",page);
+			model.addAttribute("b",b).addAttribute("page",page).addAttribute("list",list);
 			return "detail";
 		}else {
 			throw new BoardException("게시글 상세보기를 실패하였습니다.");
@@ -117,5 +119,19 @@ public class BoardController {
 	public ArrayList<Board> selectTop() {
 		ArrayList<Board> list = bService.selectTop();
 		return list;
+	}
+	
+	@GetMapping("rinsert")
+	@ResponseBody
+	public ArrayList<Reply> insertReply(@ModelAttribute Reply r) {
+		int result = bService.insertReply(r);
+		ArrayList<Reply> list = bService.selectReplyList(r.getRefBoardId());
+		return list;
+	}
+	
+	@GetMapping("rdelete")
+	@ResponseBody
+	public int deleteReply(@RequestParam("rId") int rId) {
+		return bService.deleteReply(rId);
 	}
 }
