@@ -4,6 +4,8 @@ package kh.springboot.member.controller;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,6 +19,8 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.servlet.ModelAndView;
 
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpSession;
 import kh.springboot.member.model.exception.MemberException;
 import kh.springboot.member.model.service.MemberService;
@@ -37,6 +41,7 @@ public class MemberController {
 	//DI 생성자 주입
 	private final MemberService mService;
 	private final BCryptPasswordEncoder bcrypt;
+	private final JavaMailSender mailSender;
 	
 	@GetMapping("signIn")
 	public String signIn() {
@@ -259,4 +264,38 @@ public class MemberController {
 		return count;
 	}
 	
+	@GetMapping("echeck")
+	@ResponseBody
+	public String checkEmail(@RequestParam("email") String email) {
+		//SimpleMailMessage : 문자열 형식의 text만 전송 가능
+		//MimeMessage : 문자열 형식 + html형식 전송 가능
+		MimeMessage mimeMessage = mailSender.createMimeMessage();
+		
+		String subject = "[StringBoot] 이메일 확인";
+		String body = "<h1 align='center'>SpringBoot 이메일 확인</h1><br/>"	;
+		body += "<div style='border: 3px solid skyblue; text-align: center; font-size:15px;'>";
+		body += "본 메일은 이메일을 확인하기 위해 발송되었습니다.<br/>";
+		body += "아래 숫자를 인증번호 확인란에 작성하여 확인해주시기 바랍니다.<br/><br/>";
+		
+		
+		
+		String random = "";
+		for(int i=0; i<5; i++) {
+			random += (int)(Math.random()*10);
+		}
+		
+		body += "<span style='font-size: 30px; text-decoration: underline;'><b>"+ random + "</b></span><br/></div>";
+		
+		MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);
+		try {
+			mimeMessageHelper.setTo(email);
+			mimeMessageHelper.setSubject(subject);
+			mimeMessageHelper.setText(body,true);
+		} catch (MessagingException e) {
+			e.printStackTrace();
+		}
+		
+		mailSender.send(mimeMessage); // Email 전송
+		return random;
+	}
 }

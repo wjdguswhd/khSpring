@@ -88,6 +88,11 @@ public class BoardService {
 	}
 
 
+	public int updateReply(Reply r) {
+		return mapper.updateReply(r);
+	}
+
+
 
 //	public int statusNAttm(int bId) {
 //		return mapper.statusNAttm(bId);

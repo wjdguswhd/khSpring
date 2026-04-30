@@ -20,6 +20,6 @@ public class Reply {
 	private String replyWriter;
 	private String nickName;
 	private Date replyCreateDate;
-	private Date replyModitfyDate;
+	private Date replyModifyDate;
 	private String replyStatus;
 }

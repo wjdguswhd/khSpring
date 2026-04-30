@@ -134,4 +134,10 @@ public class BoardController {
 	public int deleteReply(@RequestParam("rId") int rId) {
 		return bService.deleteReply(rId);
 	}
+	
+	@GetMapping("rupdate")
+	@ResponseBody
+	public int updateReply(@ModelAttribute Reply r) {
+		return bService.updateReply(r);
+	}
 }
