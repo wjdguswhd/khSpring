@@ -1,7 +1,11 @@
 package kh.springboot.member.controller;
 
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 
 import org.springframework.mail.javamail.JavaMailSender;
@@ -17,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import jakarta.mail.MessagingException;
@@ -25,6 +30,7 @@ import jakarta.servlet.http.HttpSession;
 import kh.springboot.member.model.exception.MemberException;
 import kh.springboot.member.model.service.MemberService;
 import kh.springboot.member.model.vo.Member;
+import kh.springboot.member.model.vo.TodoList;
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -158,6 +164,9 @@ public class MemberController {
 	    if(loginUser != null) {
 	        String id = loginUser.getId();
 	        ArrayList<HashMap<String, Object>> list = mService.selectMyList(id);
+	        
+	        ArrayList<TodoList> todoList = mService.selectTodoList(id);
+	        mv.addObject("todoList",todoList);
 	        
 	        mv.addObject("list",list);
 	        mv.setViewName("myInfo");
@@ -298,4 +307,55 @@ public class MemberController {
 		mailSender.send(mimeMessage); // Email 전송
 		return random;
 	}
+	
+	@PostMapping("profile")
+	@ResponseBody
+	public int updateProfile(@RequestParam(value="profile", required=false) MultipartFile profile, Model model) {
+		Member m = (Member)model.getAttribute("loginUser");
+		
+		String savePath = "c:\\profiles";
+		File folder = new File(savePath);
+		if(!folder.exists()) {
+			folder.mkdirs();
+		}
+		
+		//기존 프로필에서 다른 프로필로 변경하는 경우 이전 프로필 사진 지우기
+		if(m.getProfile() != null) {
+			File f = new File(savePath + "\\" + m.getProfile());
+			f.delete();
+		}
+		
+		String renameFileName = null;
+		if(profile != null) {
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSSS");
+			int ranNum = (int)(Math.random()*100000);
+			String originFileName = profile.getOriginalFilename();
+			renameFileName = sdf.format(new Date()) + ranNum
+											+originFileName.substring(originFileName.lastIndexOf("."));
+			try {
+				profile.transferTo(new File(folder + "\\" + renameFileName));
+			} catch (IllegalStateException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+		}
+		
+		m.setProfile(renameFileName);
+		int result = mService.updateProfile(m);
+		if(result > 0) {
+			model.addAttribute("loginUser", m);
+		}
+		
+		return result;
+		
+	}
+		@GetMapping("linsert")
+		@ResponseBody
+		public int insertTodo(@ModelAttribute TodoList todo) {
+			return mService.insertTodo(todo);
+		}
+	
+		
 }

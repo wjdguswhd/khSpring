@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import kh.springboot.member.model.mapper.MemberMapper;
 import kh.springboot.member.model.vo.Member;
+import kh.springboot.member.model.vo.TodoList;
 import lombok.RequiredArgsConstructor;
 
 
@@ -52,6 +53,18 @@ public class MemberService {
 
 	public int checkValue(HashMap<String, String> map) {
 		return mapper.checkValue(map);
+	}
+
+	public int updateProfile(Member m) {
+		return mapper.updateProfile(m);
+	}
+
+	public ArrayList<TodoList> selectTodoList(String id) {
+		return mapper.selectTodoList(id);
+	}
+
+	public int insertTodo(TodoList todo) {
+		return mapper.insertTodo(todo);
 	}
 
 }
